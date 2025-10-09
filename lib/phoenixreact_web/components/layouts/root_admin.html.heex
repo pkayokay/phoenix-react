@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <.meta_tags
+      page_title={@page_title}
+      current_url={@current_url}
+      og_image_url={@og_image_url}
+      csrf_token={get_csrf_token()}
+    />
+    <.inertia_title>{@page_title}</.inertia_title>
+    <.inertia_head content={@inertia_head} />
+
+    <link phx-track-static rel="stylesheet" href={~p"/assets/css/admin.css"} />
+    <script defer phx-track-static type="module" src={~p"/assets/application.js"}>
+    </script>
+  </head>
+  <body>
+    {@inner_content}
+  </body>
+</html>

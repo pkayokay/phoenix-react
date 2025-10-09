@@ -1,0 +1,8 @@
+/* See the Tailwind configuration guide for advanced usage
+   https://tailwindcss.com/docs/configuration */
+
+@import "tailwindcss" source(none);
+@source "../../lib/phoenixreact_web/components/layouts/root_marketing.html.heex";
+@source "../js/layouts/marketing-layout.tsx";
+@source "../js/pages/marketing/**/*.tsx";
+@source "../js/pages/ui/**/*.tsx";

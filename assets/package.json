@@ -1,0 +1,34 @@
+{
+  "license": "UNLICENSED",
+  "dependencies": {
+    "@inertiajs/react": "^2.1.5",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.36.0",
+    "@types/react": "^19.1.15",
+    "@types/react-dom": "^19.1.9",
+    "eslint": "^9.36.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-perfectionist": "^4.15.0",
+    "eslint-plugin-prettier": "^5.5.4",
+    "eslint-plugin-react": "^7.37.5",
+    "globals": "^16.4.0",
+    "jiti": "^2.6.0",
+    "prettier": "^3.6.2",
+    "prettier-plugin-tailwindcss": "^0.6.14",
+    "typescript": "^5.9.2",
+    "typescript-eslint": "^8.45.0"
+  },
+  "scripts": {
+    "typecheck": "yarn tsc",
+    "lint": "yarn eslint --fix"
+  },
+  "prettier": {
+    "printWidth": 150,
+    "plugins": [
+      "prettier-plugin-tailwindcss"
+    ]
+  }
+}
