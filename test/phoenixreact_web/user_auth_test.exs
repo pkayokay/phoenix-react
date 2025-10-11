@@ -23,7 +23,7 @@ defmodule PhoenixreactWeb.UserAuthTest do
     test "stores the user token in the session", %{conn: conn, user: user} do
       conn = UserAuth.log_in_user(conn, user)
       assert token = get_session(conn, :user_token)
-      assert redirected_to(conn) == ~p"/"
+      assert redirected_to(conn) == ~p"/app"
       assert Accounts.get_user_by_session_token(token)
     end
 
@@ -109,7 +109,7 @@ defmodule PhoenixreactWeb.UserAuthTest do
       refute get_session(conn, :user_token)
       refute conn.cookies[@remember_me_cookie]
       assert %{max_age: 0} = conn.resp_cookies[@remember_me_cookie]
-      assert redirected_to(conn) == ~p"/"
+      assert redirected_to(conn) == ~p"/app/sign_in"
       refute Accounts.get_user_by_session_token(user_token)
     end
 
@@ -117,7 +117,7 @@ defmodule PhoenixreactWeb.UserAuthTest do
       conn = conn |> fetch_cookies() |> UserAuth.log_out_user()
       refute get_session(conn, :user_token)
       assert %{max_age: 0} = conn.resp_cookies[@remember_me_cookie]
-      assert redirected_to(conn) == ~p"/"
+      assert redirected_to(conn) == ~p"/app/sign_in"
     end
   end
 
@@ -229,7 +229,7 @@ defmodule PhoenixreactWeb.UserAuthTest do
         |> UserAuth.redirect_if_user_is_authenticated([])
 
       assert conn.halted
-      assert redirected_to(conn) == ~p"/"
+      assert redirected_to(conn) == ~p"/app"
     end
 
     test "does not redirect if user is not authenticated", %{conn: conn} do

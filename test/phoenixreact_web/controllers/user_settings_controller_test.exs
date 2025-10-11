@@ -2,26 +2,27 @@ defmodule PhoenixreactWeb.UserSettingsControllerTest do
   use PhoenixreactWeb.ConnCase, async: true
 
   alias Phoenixreact.Accounts
+  import Inertia.Testing
   import Phoenixreact.AccountsFixtures
 
   setup :register_and_log_in_user
 
-  describe "GET /users/settings" do
+  describe "GET /app/settings" do
     test "renders settings page", %{conn: conn} do
-      conn = get(conn, ~p"/users/settings")
+      conn = get(conn, ~p"/app/settings")
       response = html_response(conn, 200)
       assert response =~ "Settings"
     end
 
     test "redirects if user is not logged in" do
       conn = build_conn()
-      conn = get(conn, ~p"/users/settings")
+      conn = get(conn, ~p"/app/settings")
       assert redirected_to(conn) == ~p"/app/sign_in"
     end
 
     @tag token_authenticated_at: DateTime.add(DateTime.utc_now(:second), -11, :minute)
     test "redirects if user is not in sudo mode", %{conn: conn} do
-      conn = get(conn, ~p"/users/settings")
+      conn = get(conn, ~p"/app/settings")
       assert redirected_to(conn) == ~p"/app/sign_in"
 
       assert Phoenix.Flash.get(conn.assigns.flash, :error) ==
@@ -29,10 +30,10 @@ defmodule PhoenixreactWeb.UserSettingsControllerTest do
     end
   end
 
-  describe "PUT /users/settings (change password form)" do
+  describe "PUT /app/settings (change password form)" do
     test "updates the user password and resets tokens", %{conn: conn, user: user} do
       new_password_conn =
-        put(conn, ~p"/users/settings", %{
+        put(conn, ~p"/app/settings", %{
           "action" => "update_password",
           "user" => %{
             "password" => "new valid password",
@@ -40,7 +41,7 @@ defmodule PhoenixreactWeb.UserSettingsControllerTest do
           }
         })
 
-      assert redirected_to(new_password_conn) == ~p"/users/settings"
+      assert redirected_to(new_password_conn) == ~p"/app/settings"
 
       assert get_session(new_password_conn, :user_token) != get_session(conn, :user_token)
 
@@ -52,7 +53,7 @@ defmodule PhoenixreactWeb.UserSettingsControllerTest do
 
     test "does not update password on invalid data", %{conn: conn} do
       old_password_conn =
-        put(conn, ~p"/users/settings", %{
+        put(conn, ~p"/app/settings", %{
           "action" => "update_password",
           "user" => %{
             "password" => "too short",
@@ -60,10 +61,14 @@ defmodule PhoenixreactWeb.UserSettingsControllerTest do
           }
         })
 
-      response = html_response(old_password_conn, 200)
-      assert response =~ "Settings"
-      assert response =~ "should be at least 12 character(s)"
-      assert response =~ "does not match password"
+      assert redirected_to(old_password_conn) == ~p"/app/settings"
+      conn = get(old_password_conn, ~p"/app/settings")
+
+      assert inertia_component(conn) == "admin/settings"
+
+      flash_message = "should be at least 12 character(s)"
+      assert inertia_props(conn).flash == %{"error" => flash_message}
+      assert Phoenix.Flash.get(conn.assigns.flash, :error) =~ flash_message
 
       assert get_session(old_password_conn, :user_token) == get_session(conn, :user_token)
     end
@@ -73,12 +78,12 @@ defmodule PhoenixreactWeb.UserSettingsControllerTest do
     @tag :capture_log
     test "updates the user email", %{conn: conn, user: user} do
       conn =
-        put(conn, ~p"/users/settings", %{
+        put(conn, ~p"/app/settings", %{
           "action" => "update_email",
           "user" => %{"email" => unique_user_email()}
         })
 
-      assert redirected_to(conn) == ~p"/users/settings"
+      assert redirected_to(conn) == ~p"/app/settings"
 
       assert Phoenix.Flash.get(conn.assigns.flash, :info) =~
                "A link to confirm your email"
@@ -88,11 +93,13 @@ defmodule PhoenixreactWeb.UserSettingsControllerTest do
 
     test "does not update email on invalid data", %{conn: conn} do
       conn =
-        put(conn, ~p"/users/settings", %{
+        put(conn, ~p"/app/settings", %{
           "action" => "update_email",
           "user" => %{"email" => "with spaces"}
         })
 
+      assert redirected_to(conn) == ~p"/app/settings"
+      conn = get(conn, ~p"/app/settings")
       response = html_response(conn, 200)
       assert response =~ "Settings"
       assert response =~ "must have the @ sign and no spaces"
@@ -112,8 +119,8 @@ defmodule PhoenixreactWeb.UserSettingsControllerTest do
     end
 
     test "updates the user email once", %{conn: conn, user: user, token: token, email: email} do
-      conn = get(conn, ~p"/users/settings/confirm-email/#{token}")
-      assert redirected_to(conn) == ~p"/users/settings"
+      conn = get(conn, ~p"/app/settings/confirm-email/#{token}")
+      assert redirected_to(conn) == ~p"/app/settings"
 
       assert Phoenix.Flash.get(conn.assigns.flash, :info) =~
                "Email changed successfully"
@@ -121,17 +128,17 @@ defmodule PhoenixreactWeb.UserSettingsControllerTest do
       refute Accounts.get_user_by_email(user.email)
       assert Accounts.get_user_by_email(email)
 
-      conn = get(conn, ~p"/users/settings/confirm-email/#{token}")
+      conn = get(conn, ~p"/app/settings/confirm-email/#{token}")
 
-      assert redirected_to(conn) == ~p"/users/settings"
+      assert redirected_to(conn) == ~p"/app/settings"
 
       assert Phoenix.Flash.get(conn.assigns.flash, :error) =~
                "Email change link is invalid or it has expired"
     end
 
     test "does not update email with invalid token", %{conn: conn, user: user} do
-      conn = get(conn, ~p"/users/settings/confirm-email/oops")
-      assert redirected_to(conn) == ~p"/users/settings"
+      conn = get(conn, ~p"/app/settings/confirm-email/oops")
+      assert redirected_to(conn) == ~p"/app/settings"
 
       assert Phoenix.Flash.get(conn.assigns.flash, :error) =~
                "Email change link is invalid or it has expired"
@@ -141,7 +148,7 @@ defmodule PhoenixreactWeb.UserSettingsControllerTest do
 
     test "redirects if user is not logged in", %{token: token} do
       conn = build_conn()
-      conn = get(conn, ~p"/users/settings/confirm-email/#{token}")
+      conn = get(conn, ~p"/app/settings/confirm-email/#{token}")
       assert redirected_to(conn) == ~p"/app/sign_in"
     end
   end

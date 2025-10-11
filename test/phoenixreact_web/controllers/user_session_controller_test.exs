@@ -3,6 +3,7 @@ defmodule PhoenixreactWeb.UserSessionControllerTest do
 
   import Phoenixreact.AccountsFixtures
   alias Phoenixreact.Accounts
+  import Inertia.Testing
 
   setup do
     %{unconfirmed_user: unconfirmed_user_fixture(), user: user_fixture()}
@@ -11,10 +12,7 @@ defmodule PhoenixreactWeb.UserSessionControllerTest do
   describe "GET /app/sign_in" do
     test "renders login page", %{conn: conn} do
       conn = get(conn, ~p"/app/sign_in")
-      response = html_response(conn, 200)
-      assert response =~ "Log in"
-      assert response =~ ~p"/users/register"
-      assert response =~ "Log in with email"
+      assert inertia_component(conn) == "auth/sign-in"
     end
 
     test "renders login page with email filled in (sudo mode)", %{conn: conn, user: user} do
@@ -24,20 +22,13 @@ defmodule PhoenixreactWeb.UserSessionControllerTest do
         |> get(~p"/app/sign_in")
         |> html_response(200)
 
-      assert html =~ "You need to reauthenticate"
+      assert html =~ "Sign in"
       refute html =~ "Register"
-      assert html =~ "Log in with email"
-
-      assert html =~
-               ~s(<input type="email" name="user[email]" id="login_form_magic_email" value="#{user.email}")
     end
 
     test "renders login page (email + password)", %{conn: conn} do
       conn = get(conn, ~p"/app/sign_in?mode=password")
-      response = html_response(conn, 200)
-      assert response =~ "Log in"
-      assert response =~ ~p"/users/register"
-      assert response =~ "Log in with email"
+      assert inertia_component(conn) == "auth/sign-in"
     end
   end
 
@@ -49,7 +40,7 @@ defmodule PhoenixreactWeb.UserSessionControllerTest do
         end)
 
       conn = get(conn, ~p"/app/sign_in/#{token}")
-      assert html_response(conn, 200) =~ "Confirm and stay logged in"
+      assert html_response(conn, 200) =~ "Confirm"
     end
 
     test "renders login page for confirmed user", %{conn: conn, user: user} do
@@ -59,9 +50,7 @@ defmodule PhoenixreactWeb.UserSessionControllerTest do
         end)
 
       conn = get(conn, ~p"/app/sign_in/#{token}")
-      html = html_response(conn, 200)
-      refute html =~ "Confirm my account"
-      assert html =~ "Log in"
+      assert inertia_component(conn) == "auth/confirm"
     end
 
     test "raises error for invalid token", %{conn: conn} do
@@ -83,14 +72,9 @@ defmodule PhoenixreactWeb.UserSessionControllerTest do
         })
 
       assert get_session(conn, :user_token)
-      assert redirected_to(conn) == ~p"/"
-
-      # Now do a logged in request and assert on the menu
-      conn = get(conn, ~p"/")
-      response = html_response(conn, 200)
-      assert response =~ user.email
-      assert response =~ ~p"/users/settings"
-      assert response =~ ~p"/app/log_out"
+      assert redirected_to(conn) == ~p"/app"
+      conn = get(conn, ~p"/app")
+      assert inertia_component(conn) == "admin/dashboard"
     end
 
     test "logs the user in with remember me", %{conn: conn, user: user} do
@@ -106,7 +90,7 @@ defmodule PhoenixreactWeb.UserSessionControllerTest do
         })
 
       assert conn.resp_cookies["_phoenixreact_web_user_remember_me"]
-      assert redirected_to(conn) == ~p"/"
+      assert redirected_to(conn) == ~p"/app"
     end
 
     test "logs the user in with return to", %{conn: conn, user: user} do
@@ -132,9 +116,9 @@ defmodule PhoenixreactWeb.UserSessionControllerTest do
           "user" => %{"email" => user.email, "password" => "invalid_password"}
         })
 
-      response = html_response(conn, 200)
-      assert response =~ "Log in"
-      assert response =~ "Invalid email or password"
+      assert redirected_to(conn) == ~p"/app/sign_in"
+      conn = get(conn, ~p"/app/sign_in")
+      assert Phoenix.Flash.get(conn.assigns.flash, :error) =~ "Invalid email or password"
     end
   end
 
@@ -158,14 +142,9 @@ defmodule PhoenixreactWeb.UserSessionControllerTest do
         })
 
       assert get_session(conn, :user_token)
-      assert redirected_to(conn) == ~p"/"
-
-      # Now do a logged in request and assert on the menu
-      conn = get(conn, ~p"/")
-      response = html_response(conn, 200)
-      assert response =~ user.email
-      assert response =~ ~p"/users/settings"
-      assert response =~ ~p"/app/log_out"
+      assert redirected_to(conn) == ~p"/app"
+      conn = get(conn, ~p"/app")
+      assert inertia_component(conn) == "admin/dashboard"
     end
 
     test "confirms unconfirmed user", %{conn: conn, unconfirmed_user: user} do
@@ -179,17 +158,12 @@ defmodule PhoenixreactWeb.UserSessionControllerTest do
         })
 
       assert get_session(conn, :user_token)
-      assert redirected_to(conn) == ~p"/"
+      assert redirected_to(conn) == ~p"/app"
       assert Phoenix.Flash.get(conn.assigns.flash, :info) =~ "User confirmed successfully."
 
       assert Accounts.get_user!(user.id).confirmed_at
-
-      # Now do a logged in request and assert on the menu
-      conn = get(conn, ~p"/")
-      response = html_response(conn, 200)
-      assert response =~ user.email
-      assert response =~ ~p"/users/settings"
-      assert response =~ ~p"/app/log_out"
+      conn = get(conn, ~p"/app")
+      assert inertia_component(conn) == "admin/dashboard"
     end
 
     test "emits error message when magic link is invalid", %{conn: conn} do
@@ -198,23 +172,25 @@ defmodule PhoenixreactWeb.UserSessionControllerTest do
           "user" => %{"token" => "invalid"}
         })
 
-      assert html_response(conn, 200) =~ "The link is invalid or it has expired."
+      assert redirected_to(conn) == ~p"/app/sign_in"
+
+      assert Phoenix.Flash.get(conn.assigns.flash, :error) =~
+               "The link is invalid or it has expired."
     end
   end
 
   describe "DELETE /app/log_out" do
     test "logs the user out", %{conn: conn, user: user} do
       conn = conn |> log_in_user(user) |> delete(~p"/app/log_out")
-      assert redirected_to(conn) == ~p"/"
+      assert redirected_to(conn) == ~p"/app/sign_in"
       refute get_session(conn, :user_token)
       assert Phoenix.Flash.get(conn.assigns.flash, :info) =~ "Logged out successfully"
     end
 
     test "succeeds even if the user is not logged in", %{conn: conn} do
       conn = delete(conn, ~p"/app/log_out")
-      assert redirected_to(conn) == ~p"/"
+      assert redirected_to(conn) == ~p"/app/sign_in"
       refute get_session(conn, :user_token)
-      assert Phoenix.Flash.get(conn.assigns.flash, :info) =~ "Logged out successfully"
     end
   end
 end

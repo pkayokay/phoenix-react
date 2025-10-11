@@ -34,8 +34,20 @@ defmodule PhoenixreactWeb.UserSettingsController do
         )
         |> redirect(to: ~p"/app/settings")
 
-      _changeset ->
-        render_inertia(conn, "admin/settings")
+      changeset ->
+        errors =
+          Ecto.Changeset.traverse_errors(changeset, fn {msg, opts} ->
+            Enum.reduce(opts, msg, fn {key, value}, acc ->
+              String.replace(acc, "%{#{key}}", to_string(value))
+            end)
+          end)
+
+        email_error =
+          get_in(errors, [:email]) |> List.first() || "Failed to update password."
+
+        conn
+        |> put_flash(:error, email_error)
+        |> redirect(to: ~p"/app/settings")
     end
   end
 

@@ -1,8 +1,8 @@
 defmodule PhoenixreactWeb.PageControllerTest do
   use PhoenixreactWeb.ConnCase
 
-  test "GET /", %{conn: conn} do
-    conn = get(conn, ~p"/")
+  test "GET /phoenix", %{conn: conn} do
+    conn = get(conn, ~p"/phoenix")
     assert html_response(conn, 200) =~ "Peace of mind from prototype to production"
   end
 end
