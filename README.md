@@ -1,5 +1,10 @@
 # Phoenix React Boilerplate
 
+## Fork
+- Replace `Phoenixreact` with your project's name
+- Replace `phoenixreact` with your project's name lowercased.
+- Rename `phoenixreact_...` directories with your project's name lowercased.
+
 ## Install npm dependencies
 
 - `mix install`
