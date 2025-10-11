@@ -107,8 +107,11 @@ USER nobody
 # above and adding an entrypoint. See https://github.com/krallin/tini for details
 # ENTRYPOINT ["/tini", "--"]
 
-# CMD ["sh", "-c", "/app/bin/migrate && /app/bin/server"]
+CMD ["sh", "-c", "/app/bin/migrate && /app/bin/server"]
 
-# Copy scripts for deployments
-COPY release.sh ./
-COPY run.sh ./
+# Copy scripts for deployments 
+# Some providers have a release command and web process to run, you can use the scripts below and run your migration + web server process)
+# Ex. A release process -> "bash release.sh"
+# Ex. Add a web process -> "bash run.sh"
+# COPY release.sh ./
+# COPY run.sh ./
