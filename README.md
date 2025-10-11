@@ -1,4 +1,4 @@
-# Phoenixreact
+# Phoenix React Boilerplate
 
 ## Install npm dependencies
 
