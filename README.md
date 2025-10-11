@@ -1,5 +1,42 @@
 # Phoenixreact
 
+## Install npm dependencies
+
+- `mix install`
+
+## React
+
+- `mix lint` to lint via eslint with prettier rules.
+- `mix ts` for type checking.
+
+## Server side rendering
+
+To server render a component, pass in a prop of `ssr` set to true.
+
+```ex
+  def home(conn, _params) do
+    conn
+    ...
+    |> assign_prop(:ssr, true)
+    |> render_inertia("some-component", ssr: true)
+  end
+```
+
+## Set page title
+
+Assigns server side page_title and passes a prop to set the same value on the client.
+
+```ex
+  def home(conn, _params) do
+    conn
+    ...
+    |> PhoenixreactWeb.PageTitle.assign("Home Page - My App")
+    ...
+  end
+```
+
+---
+
 To start your Phoenix server:
 
 - Run `mix setup` to install and setup dependencies
