@@ -15,6 +15,9 @@ export default function MarketingLayout({ children }: { children: React.ReactNod
         <Link className="text-blue-600" href="/pricing">
           Pricing
         </Link>
+        <a className="text-blue-600" href="/app/sign_in">
+          Sign in
+        </a>
       </div>
       <main>{children}</main>
     </div>
