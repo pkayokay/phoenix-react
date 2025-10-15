@@ -104,9 +104,9 @@ defmodule Phoenixreact.MixProject do
       ],
       precommit: ["compile --warning-as-errors", "deps.unlock --unused", "format", "test"],
       # Custom
-      install: ["deps.get", "cmd cd assets && yarn"],
-      lint: ["cmd cd assets && yarn lint"],
-      ts: ["cmd cd assets && yarn typecheck"]
+      install: ["deps.get", "cmd cd assets && npm install"],
+      lint: ["cmd cd assets && npm run lint"],
+      ts: ["cmd cd assets && npm run typecheck"]
     ]
   end
 end

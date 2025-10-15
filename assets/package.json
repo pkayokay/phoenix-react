@@ -22,8 +22,8 @@
     "typescript-eslint": "^8.45.0"
   },
   "scripts": {
-    "typecheck": "yarn tsc",
-    "lint": "yarn eslint --fix"
+    "typecheck": "tsc",
+    "lint": "eslint --fix"
   },
   "prettier": {
     "printWidth": 150,
