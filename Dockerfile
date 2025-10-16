@@ -97,6 +97,9 @@ RUN chown nobody /app
 # set runner ENV
 ENV MIX_ENV="prod"
 
+# ensure node is running in production mode
++ ENV NODE_ENV="production"
+
 # Only copy the final release from the build stage
 COPY --from=builder --chown=nobody:root /app/_build/${MIX_ENV}/rel/phoenixreact ./
 
@@ -109,7 +112,7 @@ USER nobody
 
 CMD ["sh", "-c", "/app/bin/migrate && /app/bin/server"]
 
-# Copy scripts for deployments 
+# Copy scripts for deployments
 # Some providers have a release command and web process to run, you can use the scripts below and run your migration + web server process)
 # Ex. A release process -> "bash release.sh"
 # Ex. Add a web process -> "bash run.sh"
