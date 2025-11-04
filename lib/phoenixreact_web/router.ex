@@ -1,6 +1,7 @@
 defmodule PhoenixreactWeb.Router do
   use PhoenixreactWeb, :router
 
+  import PhoenixreactWeb.MetaTags
   import PhoenixreactWeb.UserAuth
 
   pipeline :browser do
@@ -20,7 +21,7 @@ defmodule PhoenixreactWeb.Router do
     plug :put_root_layout, html: {PhoenixreactWeb.Layouts, :root_marketing}
     plug :protect_from_forgery
     plug :put_secure_browser_headers
-    plug PhoenixreactWeb.Plugs.SetMetaUrl
+    plug :set_meta_tag_values
     plug Inertia.Plug
   end
 
@@ -32,7 +33,7 @@ defmodule PhoenixreactWeb.Router do
     plug :protect_from_forgery
     plug :put_secure_browser_headers
     plug :fetch_current_scope_for_user
-    plug PhoenixreactWeb.Plugs.SetMetaUrl
+    plug :set_meta_tag_values
     plug Inertia.Plug
   end
 

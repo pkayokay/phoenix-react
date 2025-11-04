@@ -1,9 +1,7 @@
-defmodule PhoenixreactWeb.Plugs.SetMetaUrl do
+defmodule PhoenixreactWeb.MetaTags do
   import Plug.Conn
 
-  def init(opts), do: opts
-
-  def call(conn, _opts) do
+  def set_meta_tag_values(conn, _opts) do
     current_url = PhoenixreactWeb.Endpoint.url() <> conn.request_path
     og_image_url = PhoenixreactWeb.Endpoint.url() <> "/og.png"
 
